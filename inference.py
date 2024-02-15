@@ -20,7 +20,12 @@ def generate_text(checkpoint_path, initial_str, how_many=100, temperature=0.85, 
     """
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     checkpoint = torch.load(checkpoint_path)
-    model = RNN(input_size=100, hidden_size=256, num_layers=3, output_size=100).to(device)
+    model = RNN(
+        input_size=checkpoint['input_size'],
+        hidden_size=checkpoint['hidden_size'],
+        num_layers=checkpoint['num_layers'],
+        output_size=checkpoint['output_size']
+    ).to(device)
     model.load_state_dict(checkpoint['model_state_dict'])
     gen = Generator(model)
     generated_text = gen.generate(initial_str=initial_str, how_many=how_many, temperature=temperature,

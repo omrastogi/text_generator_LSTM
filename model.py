@@ -12,8 +12,20 @@ from torch.utils.tensorboard import SummaryWriter
 all_characters = string.printable
 n_characters = len(string.printable)
 
-file = unidecode.unidecode(open('names.txt').read())
 
+def get_names_from_file(file_path):
+    names = []
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+    # Iterate over lines, skipping the header line
+    for line in lines[1:]:
+        name = line.strip().split(',')[1]
+        names.append(name)
+    return names
+
+# file = unidecode.unidecode(open('names.txt').read())
+file = get_names_from_file('names.txt')
+file = " ".join(file)
 # Make sure to set the device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -43,12 +55,13 @@ class RNN(nn.Module):
 class Generator:
     def __init__(self, model=None):
         self.chunk_len = 250
-        self.num_epochs = 500
+        self.num_epochs = 300
         self.batch_size = 1
         self.print_every = 10
         self.hidden_size = 256
         self.num_layers = 2
         self.lr = 0.03
+        self.input_size = self.output_size = n_characters
         self.checkpoint_interval = 50
         if model:
             self.rnn = model
@@ -81,13 +94,14 @@ class Generator:
 
         all_pred = []
         last_char = initial_input[-1]
+        # Also require a total loss for the name
         for i in range(how_many):
             for p in range(predict_len):
                 output, (hidden, cell) = self.rnn(last_char.view(1).to(device), hidden, cell)
                 output_dist = output.data.view(-1).div(temperature).exp()
                 top_char = torch.multinomial(output_dist, 1)[0]
                 predicted_char = all_characters[top_char]
-                if predicted_char == "\n":
+                if predicted_char in ["\n", " "]:
                     break
                 predicted += predicted_char
                 last_char = self.char_tensor(predicted_char)
@@ -138,6 +152,10 @@ class Generator:
             'epoch': epoch,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
+            'input_size': self.input_size,
+            'output_size': self.output_size,
+            'hidden_size': self.hidden_size,
+            'num_layers': self.num_layers
         }
         torch.save(state, checkpoint_path)
 
