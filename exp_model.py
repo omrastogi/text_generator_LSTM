@@ -56,6 +56,7 @@ class LSTMWithAttention(nn.Module):
         return (torch.zeros(self.num_layers, 1, self.hidden_size),
                 torch.zeros(self.num_layers, 1, self.hidden_size))
 
+
     def train(self):
         self.lstm_with_attention = LSTMWithAttention(n_characters, self.hidden_size, n_characters, self.num_layers).to(
             device)

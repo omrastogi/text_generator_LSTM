@@ -119,35 +119,6 @@ class Generator:
 
         return all_pred, all_probs
 
-    """def generate(self, initial_str='Ab', predict_len=100, temperature=0.85, how_many=1, max_length=float('inf')):
-        hidden, cell = self.rnn.init_hidden(batch_size=self.batch_size)
-        initial_input = self.char_tensor(initial_str)
-        predicted = initial_str
-
-        for p in range(len(initial_str) - 1):
-            _, (hidden, cell) = self.rnn(initial_input[p].view(1).to(device), hidden, cell)
-
-        all_pred = []
-        last_char = initial_input[-1]
-        # Also require a total loss for the name
-        for i in range(how_many):
-        prob=[]
-            for p in range(predict_len):
-                output, (hidden, cell) = self.rnn(last_char.view(1).to(device), hidden, cell)
-                output_dist =( output.data.view(-1).div(temperature).exp())
-                top_char = torch.multinomial(output_dist, 1)[0]
-                predicted_char = all_characters[top_char]
-                char_prob=output_dist[top_char]
-                prob.append(char_prob)
-
-                if predicted_char in ["\n", " "]:
-                    break
-                predicted += predicted_char
-                last_char = self.char_tensor(predicted_char)
-            if len(predicted) < max_length:
-                all_pred.append(predicted)
-        return [all_pred,prob]                                                                                                                                                                
-    """
 
     '''def generate(self, initial_str='Ab', predict_len=100, temperature=0.85, how_many=1, max_length=float('inf')):
         hidden, cell = self.rnn.init_hidden(batch_size=self.batch_size)

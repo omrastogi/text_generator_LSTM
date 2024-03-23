@@ -50,3 +50,4 @@ for i in range(10):
 
         generated_text = generate_text(args.checkpoint, args.initial_str, args.how_many, args.temperature, args.max_length)
         print(generated_text)
+
