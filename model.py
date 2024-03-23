@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import string
 import random
+import numpy as np
 import sys
 import unidecode
 from torch.utils.tensorboard import SummaryWriter
@@ -93,22 +94,66 @@ class Generator:
             _, (hidden, cell) = self.rnn(initial_input[p].view(1).to(device), hidden, cell)
 
         all_pred = []
+        all_probs = []  # List to store probabilities for each generated name
         last_char = initial_input[-1]
-        # Also require a total loss for the name
+
         for i in range(how_many):
+            prob_sequence = []  # List to store probabilities for the current generated name
             for p in range(predict_len):
                 output, (hidden, cell) = self.rnn(last_char.view(1).to(device), hidden, cell)
                 output_dist = output.data.view(-1).div(temperature).exp()
                 top_char = torch.multinomial(output_dist, 1)[0]
                 predicted_char = all_characters[top_char]
+
                 if predicted_char in ["\n", " "]:
+                    break
+
+                prob_sequence.append(output_dist[top_char].item())  # Append probability
+                predicted += predicted_char
+                last_char = self.char_tensor(predicted_char)
+
+            if len(predicted) < max_length:
+                all_pred.append(predicted)
+                all_pred.append(prob_sequence)
+                all_probs.append(prob_sequence)
+
+        return all_pred, all_probs
+
+
+    '''def generate(self, initial_str='Ab', predict_len=100, temperature=0.85, how_many=1, max_length=float('inf')):
+        hidden, cell = self.rnn.init_hidden(batch_size=self.batch_size)
+        initial_input = self.char_tensor(initial_str)
+        predicted = initial_str
+
+        for p in range(len(initial_str) - 1):
+            _, (hidden, cell) = self.rnn(initial_input[p].view(1).to(device), hidden, cell)
+
+        all_pred = []
+        last_char = initial_input[-1]
+
+        for i in range(how_many):
+            for p in range(predict_len):
+                output, (hidden, cell) = self.rnn(last_char.view(1).to(device), hidden, cell)
+                output_dist = output.data.view(-1).div(temperature).exp().cpu().numpy()
+
+                # Sample characters with higher probabilities
+                top_n = 5  # Choose top 5 characters
+                top_indices = output_dist.argsort()[-top_n:][::-1]
+                top_probabilities = output_dist[top_indices]
+                top_probabilities = top_probabilities / np.sum(top_probabilities)  # Normalize probabilities
+                sampled_index = np.random.choice(top_indices, p=top_probabilities)
+
+                predicted_char = all_characters[sampled_index]
+
+                if predicted_char in ["\n", " "] or len(predicted) >= max_length:
                     break
                 predicted += predicted_char
                 last_char = self.char_tensor(predicted_char)
+
             if len(predicted) < max_length:
                 all_pred.append(predicted)
 
-        return all_pred
+        return all_pred'''
 
     def train(self):
         self.rnn = RNN(n_characters, self.hidden_size, self.num_layers, n_characters).to(device)

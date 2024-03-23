@@ -56,6 +56,43 @@ class LSTMWithAttention(nn.Module):
         return (torch.zeros(self.num_layers, 1, self.hidden_size),
                 torch.zeros(self.num_layers, 1, self.hidden_size))
 
+
+    def train(self):
+        self.lstm_with_attention = LSTMWithAttention(n_characters, self.hidden_size, n_characters, self.num_layers).to(
+            device)
+
+        optimizer = torch.optim.Adam(self.lstm_with_attention.parameters(), lr=self.lr)
+        criterion = nn.CrossEntropyLoss()
+
+        print("=> Starting training")
+        min_loss = float('inf')
+        for epoch in range(1, self.num_epochs + 1):
+            inp, target = self.get_random_batch()
+            hidden = self.lstm_with_attention.init_hidden()
+
+            self.lstm_with_attention.zero_grad()
+            loss = 0
+            inp = inp.to(device)
+            target = target.to(device)
+
+            for c in range(self.chunk_len):
+                output, hidden, _ = self.lstm_with_attention(inp[:, c], hidden)
+                loss += criterion(output, target[:, c])
+
+            loss.backward()
+            optimizer.step()
+            loss = loss.item() / self.chunk_len
+
+            if epoch % self.print_every == 0:
+                print(f'Epoch [{epoch}/{self.num_epochs}], Loss: {loss}')
+                # print(self.generate())
+
+            if loss < min_loss:
+                min_loss = loss
+                self.save_checkpoint(epoch, self.lstm_with_attention, optimizer, loss)
+
+        self.save_checkpoint(epoch, self.lstm_with_attention, optimizer, loss)
+
 # Example usage:
 input_size = 128  # Assuming input vocabulary size
 hidden_size = 256

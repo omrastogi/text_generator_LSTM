@@ -33,19 +33,21 @@ def generate_text(checkpoint_path, initial_str, how_many=100, temperature=0.85, 
     return generated_text
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Generate text using a pre-trained RNN model')
-    parser.add_argument('--checkpoint', type=str, default='checkpoints/checkpoint_epoch_344_1.6779072265625.pth',
-                        help='Path to the checkpoint file')
-    parser.add_argument('--initial_str', type=str, default='Am',
-                        help='Initial string to start the generation')
-    parser.add_argument('--how_many', type=int, default=100,
-                        help='Number of characters to generate')
-    parser.add_argument('--temperature', type=float, default=0.85,
-                        help='Temperature parameter for controlling the randomness of the generation')
-    parser.add_argument('--max_length', type=int, default=10,
-                        help='Maximum length of the generated text')
-    args = parser.parse_args()
+for i in range(10):
+    if __name__ == "__main__":
+        parser = argparse.ArgumentParser(description='Generate text using a pre-trained RNN model')
+        parser.add_argument('--checkpoint', type=str, default='checkpoints/checkpoint_epoch_344_1.6779072265625.pth',
+                            help='Path to the checkpoint file')
+        parser.add_argument('--initial_str', type=str, default='Am',
+                            help='Initial string to start the generation')
+        parser.add_argument('--how_many', type=int, default=100,
+                            help='Number of characters to generate')
+        parser.add_argument('--temperature', type=float, default=0.85,
+                            help='Temperature parameter for controlling the randomness of the generation')
+        parser.add_argument('--max_length', type=int, default=10,
+                            help='Maximum length of the generated text')
+        args = parser.parse_args()
 
-    generated_text = generate_text(args.checkpoint, args.initial_str, args.how_many, args.temperature, args.max_length)
-    print(generated_text)
+        generated_text = generate_text(args.checkpoint, args.initial_str, args.how_many, args.temperature, args.max_length)
+        print(generated_text)
+
